@@ -4,8 +4,15 @@ import streamlit as st
 from queries_olap import Queries
 # queries a la bd
 qr = Queries()
-# Establecer el ancho completo del dashboard
-st.set_page_config(layout="wide")
+
+# Configura la página
+st.set_page_config(
+    page_title="Dashboard de Anime",
+    page_icon=":tv:",
+    layout="wide"
+)
+st.markdown("<h2 style='text-align: center;'>Dashboard Minitas Chinas</h1>", unsafe_allow_html=True)
+
 top_10_anime_more_watch = qr.get_top_10_anime_more_watch() 
 top_genre_more_watch = qr.get_top_10_genre_more_watch()
 type_watch = qr.get_top_types_mor_watch()
@@ -110,8 +117,7 @@ best_anime_genre = best_anime_genre.sort_values(by='Vistas', ascending=False)
 for index, row in best_anime_genre.iterrows():
     col1, col2, col3 = st.columns([1, 3, 1])
     with col1:
-        st.write(row['Anime'])  # Muestra el nombre del anime
-        st.write(row['Genero'])  # Muestra el nombre del anime
+        st.write(f"{row['Anime']} -:- {row['Genero']}")  # Muestra el nombre del anime
     with col2:
         progress = st.progress(row['Vistas'] / best_anime_genre['Vistas'].max())  # Calcula la longitud de la barra de progreso
     with col3:
