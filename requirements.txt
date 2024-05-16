@@ -3,4 +3,4 @@ pandas
 altair
 plotly
 pymysql
-
+mysql-connector-python
