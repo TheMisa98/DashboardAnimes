@@ -40,7 +40,7 @@ class Queries:
             return None
 
     # top 10 mejores animes segun su rating
-    def get_top_10_anime(self):
+    def get_top_10_anime_rating(self):
         query = """
         SELECT A.ANIME_NAME, AVG(AH.RATING) AS AVERAGE_RATING
         FROM ANIME A
@@ -56,62 +56,65 @@ class Queries:
         else:
             return None
     
-    def get_top_10_anime_genre(self):
+    def best_anime_genre(self):
         query = """
-        SELECT GENRE, ANIME_NAME, AVERAGE_RATING
+        SELECT GENRE, ANIME_NAME, RATING_COUNT
         FROM (
-            SELECT G.GENRE, A.ANIME_NAME, AVG(AH.RATING) AS AVERAGE_RATING,
-                ROW_NUMBER() OVER (PARTITION BY G.GENRE ORDER BY AVG(AH.RATING) DESC) AS ranking
+            SELECT G.GENRE, A.ANIME_NAME, COUNT(*) AS RATING_COUNT,
+                ROW_NUMBER() OVER (PARTITION BY G.GENRE ORDER BY COUNT(*) DESC) AS ranking
             FROM ANIME A
             JOIN GENRE_ANIME GA ON A.ID_ANIME = GA.ID_ANIME
             JOIN GENRE G ON GA.ID_GENRE = G.ID_GENRE
             JOIN ANIME_HECHOS AH ON A.ID_ANIME = AH.ID_ANIME
+            WHERE AH.RATING IS NOT NULL -- Se asume que solo se cuentan los animes con calificación
             GROUP BY G.GENRE, A.ANIME_NAME
         ) AS ranked
-        WHERE ranking <= 10
-        ORDER BY GENRE, AVERAGE_RATING DESC;
+        WHERE ranking <= 1
+        ORDER BY GENRE, RATING_COUNT DESC;
         """
         result = self.execute_query(query)
         if result:
-            df = pd.DataFrame(result,columns=['Genero','Anime','Rating'])
+            df = pd.DataFrame(result,columns=['Genero','Anime','Vistas'])
             return df
         else:
             return None
     
     def get_top_10_anime_class(self):
         query = """
-        SELECT CLASSIFICATION, ANIME_NAME, AVERAGE_RATING
+        SELECT CLASSIFICATION, ANIME_NAME, RATING_COUNT
         FROM (
-            SELECT C.CLASSIFICATION, A.ANIME_NAME, AVG(AH.RATING) AS AVERAGE_RATING,
-                ROW_NUMBER() OVER (PARTITION BY C.CLASSIFICATION ORDER BY AVG(AH.RATING) DESC) AS ranking
+            SELECT C.CLASSIFICATION, A.ANIME_NAME, COUNT(*) AS RATING_COUNT,
+                ROW_NUMBER() OVER (PARTITION BY C.CLASSIFICATION ORDER BY COUNT(*) DESC) AS ranking
             FROM ANIME A
             JOIN ANIME_HECHOS AH ON A.ID_ANIME = AH.ID_ANIME
             JOIN CLASSIFICATION C ON AH.ID_CLASSIFICATION = C.ID_CLASSIFICATION
+            WHERE AH.RATING IS NOT NULL -- Se asume que solo se cuentan los animes con calificación
             GROUP BY C.CLASSIFICATION, A.ANIME_NAME
         ) AS ranked
         WHERE ranking <= 10
-        ORDER BY CLASSIFICATION, AVERAGE_RATING DESC;
+        ORDER BY CLASSIFICATION, RATING_COUNT DESC;
         """
         result = self.execute_query(query)
         if result:
-            df = pd.DataFrame(result,columns=['Clase','Anime','Rating'])
+            df = pd.DataFrame(result,columns=['Clase','Anime','Vistas'])
             return df
         else:
             return None
     
     def get_top_10_anime_source(self):
         query = """
-        SELECT SOURCES, ANIME_NAME, AVERAGE_RATING
+        SELECT SOURCES, ANIME_NAME, RATING_COUNT
         FROM (
-            SELECT S.SOURCES, A.ANIME_NAME, AVG(AH.RATING) AS AVERAGE_RATING,
-                ROW_NUMBER() OVER (PARTITION BY S.SOURCES ORDER BY AVG(AH.RATING) DESC) AS ranking
+            SELECT S.SOURCES, A.ANIME_NAME, COUNT(*) AS RATING_COUNT,
+                ROW_NUMBER() OVER (PARTITION BY S.SOURCES ORDER BY COUNT(*) DESC) AS ranking
             FROM ANIME A
             JOIN ANIME_HECHOS AH ON A.ID_ANIME = AH.ID_ANIME
             JOIN SOURCES S ON AH.ID_SOURCES = S.ID_SOURCES
+            WHERE AH.RATING IS NOT NULL -- Se asume que solo se cuentan los animes con calificación
             GROUP BY S.SOURCES, A.ANIME_NAME
-            ) AS ranked
-            WHERE ranking <= 10
-        ORDER BY SOURCES, AVERAGE_RATING DESC;
+        ) AS ranked
+        WHERE ranking <= 10
+        ORDER BY SOURCES, RATING_COUNT DESC;
         """
         result = self.execute_query(query)
         if result:
@@ -122,26 +125,27 @@ class Queries:
     
     def get_top_10_anime_type(self):
         query = """
-        SELECT TYPES, ANIME_NAME, AVERAGE_RATING
+        SELECT TYPES, ANIME_NAME, VIEW_COUNT
         FROM (
-            SELECT T.TYPES, A.ANIME_NAME, AVG(AH.RATING) AS AVERAGE_RATING,
-                ROW_NUMBER() OVER (PARTITION BY T.TYPES ORDER BY AVG(AH.RATING) DESC) AS ranking
+            SELECT T.TYPES, A.ANIME_NAME, COUNT(*) AS VIEW_COUNT,
+                ROW_NUMBER() OVER (PARTITION BY T.TYPES ORDER BY COUNT(*) DESC) AS ranking
             FROM ANIME A
             JOIN ANIME_HECHOS AH ON A.ID_ANIME = AH.ID_ANIME
             JOIN TYPES T ON AH.ID_TYPES = T.ID_TYPES
+            WHERE AH.RATING > 0 -- Se asume que AH.WATCHING > 0 indica que el anime ha sido visto
             GROUP BY T.TYPES, A.ANIME_NAME
         ) AS ranked
         WHERE ranking <= 10
-        ORDER BY TYPES, AVERAGE_RATING DESC;
+        ORDER BY TYPES, VIEW_COUNT DESC;
         """
         result = self.execute_query(query)
         if result:
-            df = pd.DataFrame(result,columns=['Type','Anime','Rating'])
+            df = pd.DataFrame(result,columns=['Type','Anime','Vistas'])
             return df
         else:
             return None
     
-    def get_top_10_anime_more_completed(self):
+    def get_top_10_anime_more_watch(self):
         query = """
         SELECT A.ANIME_NAME, COUNT(*) AS COMPLETIONS
         FROM ANIME A
@@ -153,7 +157,58 @@ class Queries:
         """
         result = self.execute_query(query)
         if result:
-            df = pd.DataFrame(result,columns=['Anime','Completion'])
+            df = pd.DataFrame(result,columns=['Anime','Vistas'])
+            return df
+        else:
+            return None
+    
+    def get_top_10_genre_more_watch(self):
+        query = """
+        SELECT G.GENRE, COUNT(*) AS VIEW_COUNT
+        FROM ANIME A
+        JOIN GENRE_ANIME GA ON A.ID_ANIME = GA.ID_ANIME
+        JOIN GENRE G ON GA.ID_GENRE = G.ID_GENRE
+        JOIN ANIME_HECHOS AH ON A.ID_ANIME = AH.ID_ANIME
+        WHERE AH.RATING > 0 -- Se asume que AH.WATCHING > 0 indica que el anime ha sido visto
+        GROUP BY G.GENRE
+        ORDER BY VIEW_COUNT DESC
+        LIMIT 10;
+        """
+        result = self.execute_query(query)
+        if result:
+            df = pd.DataFrame(result,columns=['Genero','Vistas'])
+            return df
+        else:
+            return None
+    
+    def get_top_types_mor_watch(self):
+        query = """
+        SELECT T.TYPES, COUNT(*) AS VIEW_COUNT
+        FROM ANIME A
+        JOIN ANIME_HECHOS AH ON A.ID_ANIME = AH.ID_ANIME
+        JOIN TYPES T ON AH.ID_TYPES = T.ID_TYPES
+        WHERE AH.RATING > 0 -- Se asume que AH.WATCHING > 0 indica que el anime ha sido visto
+        GROUP BY T.TYPES
+        ORDER BY VIEW_COUNT DESC;
+        """
+        result = self.execute_query(query)
+        if result:
+            df = pd.DataFrame(result,columns=['Tipo','Vistas'])
+            return df
+        else:
+            return None
+    def get_top_classification_mor_watch(self):
+        query = """
+        SELECT C.CLASSIFICATION, COUNT(*) AS VIEW_COUNT
+        FROM CLASSIFICATION C
+        JOIN ANIME_HECHOS AH ON C.ID_CLASSIFICATION = AH.ID_CLASSIFICATION
+        WHERE AH.RATING > 0 -- Se asume que AH.WATCHING > 0 indica que el anime ha sido visto
+        GROUP BY C.CLASSIFICATION
+        ORDER BY VIEW_COUNT DESC;
+        """
+        result = self.execute_query(query)
+        if result:
+            df = pd.DataFrame(result,columns=['Clase','Vistas'])
             return df
         else:
             return None
