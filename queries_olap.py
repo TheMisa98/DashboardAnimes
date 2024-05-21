@@ -1,4 +1,3 @@
-import streamlit as st
 import pandas as pd
 import mysql.connector
 import json
@@ -222,3 +221,13 @@ class Queries:
         else:
             return None
 
+
+
+qr = Queries()
+
+
+qr.get_top_10_anime_more_watch().to_csv("1.csv",index=False)
+qr.get_top_10_genre_more_watch().to_csv("2.csv",index=False)
+qr.get_top_types_mor_watch().to_csv("3.csv",index=False)
+qr.get_top_classification_mor_watch().to_csv("4.csv",index=False)
+qr.best_anime_genre().to_csv("5.csv",index=False)

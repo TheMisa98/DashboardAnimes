@@ -1,9 +1,6 @@
 import plotly.express as px
 import pandas as pd
 import streamlit as st
-from queries_olap import Queries
-# queries a la bd
-qr = Queries()
 
 # Configura la página
 st.set_page_config(
@@ -13,11 +10,11 @@ st.set_page_config(
 )
 st.markdown("<h2 style='text-align: center;'>Dashboard Minitas Chinas</h1>", unsafe_allow_html=True)
 
-top_10_anime_more_watch = qr.get_top_10_anime_more_watch() 
-top_genre_more_watch = qr.get_top_10_genre_more_watch()
-type_watch = qr.get_top_types_mor_watch()
-classification = qr.get_top_classification_mor_watch()
-best_anime_genre = qr.best_anime_genre()
+top_10_anime_more_watch = pd.read_csv("./1.csv") 
+top_genre_more_watch = pd.read_csv("./2.csv")
+type_watch = pd.read_csv("./3.csv")
+classification = pd.read_csv("./4.csv")
+best_anime_genre = pd.read_csv("./5.csv")
 
 
 # Define la paleta de colores
