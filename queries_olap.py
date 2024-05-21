@@ -23,7 +23,6 @@ class Queries:
             )
             return conn
         except Exception as e:
-            st.error(f"Error al conectar a la base de datos: {e}")
             return None
 
     # Función para ejecutar consultas SQL
@@ -35,7 +34,6 @@ class Queries:
             cursor.close()
             return result
         except Exception as e:
-            st.error(f"Error al ejecutar la consulta: {e}")
             return None
 
     # top 10 mejores animes segun su rating

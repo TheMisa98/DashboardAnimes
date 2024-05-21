@@ -1,4 +1,5 @@
 import plotly.express as px
+import matplotlib.pyplot as plt
 import pandas as pd
 import streamlit as st
 
@@ -78,7 +79,7 @@ with st.container():
     column1, column2 = st.columns(2)
     with column1:
         st.markdown("<h2 style='text-align: center;'>Tipos de animes más importantes</h1>", unsafe_allow_html=True)
-        
+
         # Calcular el porcentaje que el tipo de anime con más vistas representa del resto de tipos
         total_vistas = type_watch['Vistas'].sum()
         max_vistas = type_watch['Vistas'].max()
@@ -86,28 +87,58 @@ with st.container():
         porcentaje_resto = 100 - porcentaje_max_vistas
 
         # Crear las etiquetas para el gráfico de pastel
-        labels = [f'Tipo más visto ({porcentaje_max_vistas:.2f}%)', f'Resto de tipos ({porcentaje_resto:.2f}%)']
+        labels = [f'Tipo Tv con ({porcentaje_max_vistas:.2f}%) de vistas', f'Movie, OVA, Special, ONA, Music ({porcentaje_resto:.2f}%)']
+        sizes = [porcentaje_max_vistas, porcentaje_resto]
+        colors = ['#ff9999', '#66b3ff']  # Paleta de colores (ajusta según tu preferencia)
 
-        # Crear el gráfico de pastel con la paleta de colores
-        fig_pie = px.pie(type_watch, values='Vistas', names='Tipo', color='Tipo', 
-                        color_discrete_map=palette, hole=0.6, labels=labels)  # Define el tamaño del agujero y las etiquetas
+        # Crear el gráfico de pastel
+        fig, ax = plt.subplots()
+        wedges, texts, autotexts = ax.pie(
+            sizes, 
+            colors=colors, 
+            labels=labels, 
+            autopct='%1.1f%%',
+            startangle=140, 
+            wedgeprops=dict(width=0.3),  # Ajustar el tamaño del agujero
+            pctdistance=0.85
+        )
 
         # Resaltar la sección correspondiente al tipo de anime con más vistas
-        fig_pie.update_traces(pull=[0.1, 0], textinfo='percent+label')  # Ajusta el pull para resaltar la sección
+        wedges[0].set_edgecolor('black')
+        wedges[0].set_linewidth(2)
 
-        # Mostrar el gráfico de pastel en Streamlit
-        st.plotly_chart(fig_pie, use_container_width=True)
+        # Añadir un círculo en el centro para hacer el gráfico de donut
+        centre_circle = plt.Circle((0,0),0.70,fc='white')
+        fig.gca().add_artist(centre_circle)
+
+        # Asegurarse de que el gráfico es circular
+        ax.axis('equal')
+
+        # Mostrar el gráfico en Streamlit
+        st.pyplot(fig,use_container_width=True)
 
     with column2:
         st.markdown("<h2 style='text-align: center;'>Vistas por clasificación</h1>", unsafe_allow_html=True)
         # Crear el histograma con la paleta de colores
-        fig = px.bar(classification, x="Clase", y="Vistas", color="Clase", 
-                    color_discrete_map=palette)
-        fig.update_xaxes(title="Tipo")
-        fig.update_yaxes(title="Vistas")
-        fig.update_layout(xaxis={'categoryorder':'total descending'}) # Ordenar las barras de mayor a menor
+        fig, ax = plt.subplots()
+
+        # Extraer los datos necesarios
+        classification = classification.dropna()
+        clases = classification['Clase']
+        vistas = classification['Vistas']
+        palette = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
+
+        # Crear las barras del histograma
+        bars = ax.bar(clases, vistas, color=palette)
+
+        # Añadir etiquetas y títulos
+        ax.set_xlabel('Tipo')
+        ax.set_ylabel('Vistas')
+        ax.set_title('Histograma de Vistas por Tipo')
+        ax.xaxis.set_tick_params(rotation=45)  # Rotar etiquetas del eje x para mejor visualización
+
         # Mostrar el histograma en Streamlit
-        st.plotly_chart(fig, use_container_width=True)
+        st.pyplot(fig,use_container_width=True)
         
 st.subheader("Mejores animes por género:")
 best_anime_genre = best_anime_genre.sort_values(by='Vistas', ascending=False)
