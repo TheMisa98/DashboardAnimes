@@ -1,5 +1,7 @@
 import plotly.express as px
 import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+import numpy as np
 import pandas as pd
 import streamlit as st
 
@@ -145,11 +147,9 @@ fig = px.bar(df, x="GENRE", y="CANTIDAD", color="GENRE",
   animation_frame="anio",  range_y=[0,200])
 st.plotly_chart(fig,use_container_width=True)
 
-st.subheader("Cantidad de animes por Año de cada genero")
-df = pd.read_csv("./cant_genero_mes.csv")
-fig = px.bar(df, x="GENRE", y="CANTIDAD", color="GENRE",
-  animation_frame="anio",  range_y=[0,200])
-st.plotly_chart(fig,use_container_width=True)
+st.subheader("Cantidad de animes por mes de cada Source")
+
+st.image('file_name.gif')
 
 st.subheader("Mejores animes por género:")
 best_anime_genre = best_anime_genre.sort_values(by='Vistas', ascending=False)
