@@ -139,7 +139,18 @@ with st.container():
 
         # Mostrar el histograma en Streamlit
         st.pyplot(fig,use_container_width=True)
-        
+st.subheader("Cantidad de animes por Año de cada genero")
+df = pd.read_csv("./cant_genero_mes.csv")
+fig = px.bar(df, x="GENRE", y="CANTIDAD", color="GENRE",
+  animation_frame="anio",  range_y=[0,200])
+st.plotly_chart(fig,use_container_width=True)
+
+st.subheader("Cantidad de animes por Año de cada genero")
+df = pd.read_csv("./cant_genero_mes.csv")
+fig = px.bar(df, x="GENRE", y="CANTIDAD", color="GENRE",
+  animation_frame="anio",  range_y=[0,200])
+st.plotly_chart(fig,use_container_width=True)
+
 st.subheader("Mejores animes por género:")
 best_anime_genre = best_anime_genre.sort_values(by='Vistas', ascending=False)
 for index, row in best_anime_genre.iterrows():
