@@ -1,8 +1,5 @@
 import plotly.express as px
 import matplotlib.pyplot as plt
-import matplotlib.animation as animation
-import numpy as np
-import streamlit.components.v1 as components
 import base64
 import pandas as pd
 import streamlit as st
