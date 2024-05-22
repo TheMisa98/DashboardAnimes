@@ -2,6 +2,8 @@ import plotly.express as px
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import numpy as np
+import streamlit.components.v1 as components
+import base64
 import pandas as pd
 import streamlit as st
 
@@ -148,8 +150,15 @@ fig = px.bar(df, x="GENRE", y="CANTIDAD", color="GENRE",
 st.plotly_chart(fig,use_container_width=True)
 
 st.subheader("Cantidad de animes por mes de cada Source")
+file_ = open("file_name.gif", "rb")
+contents = file_.read()
+data_url = base64.b64encode(contents).decode("utf-8")
+file_.close()
 
-st.image('file_name.gif')
+st.markdown(
+    f'<img src="data:image/gif;base64,{data_url}" alt="cat gif" width="1000" height="400">',
+    unsafe_allow_html=True,
+)
 
 st.subheader("Mejores animes por género:")
 best_anime_genre = best_anime_genre.sort_values(by='Vistas', ascending=False)
